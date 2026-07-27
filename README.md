@@ -7,6 +7,7 @@
 [![PySide6](https://img.shields.io/badge/GUI-PySide6%20%2F%20Qt6-41CD52.svg?style=flat&logo=qt)](https://www.qt.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Author: ISAMU the Guitar](https://img.shields.io/badge/Author-ISAMU_the_Guitar-58a6ff.svg)](https://www.isamutheguitar.com)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/isamutheguitar)
 
 Developed by **[ISAMU the Guitar](https://www.isamutheguitar.com)**  
 GitHub Repository: [https://github.com/isamutheguitar/RTL-Analyzer](https://github.com/isamutheguitar/RTL-Analyzer)
@@ -192,6 +193,7 @@ python generate_spec_pdf.py
 **ISAMU the Guitar**
 - Website: [https://www.isamutheguitar.com](https://www.isamutheguitar.com)
 - GitHub: [@isamutheguitar](https://github.com/isamutheguitar)
+- Support / Sponsor: [Buy Me a Coffee (isamutheguitar)](https://www.buymeacoffee.com/isamutheguitar)
 
 ---
 

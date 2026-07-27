@@ -13,6 +13,8 @@ dist/
 *.csv
 *.png
 *.pdf
+!docs/*.jpg
+!docs/*.png
 
 # Environments
 .venv/

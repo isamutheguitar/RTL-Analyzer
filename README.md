@@ -12,6 +12,8 @@
 Developed by **[ISAMU the Guitar](https://www.isamutheguitar.com)**  
 GitHub Repository: [https://github.com/isamutheguitar/RTL-Analyzer](https://github.com/isamutheguitar/RTL-Analyzer)
 
+![Dual-Channel RTL Analyzer Screenshot](docs/app_screenshot.png)
+
 ---
 
 ## English Section

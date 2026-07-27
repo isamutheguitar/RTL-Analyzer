@@ -1,0 +1,51 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller / Build outputs
+build/
+dist/
+*.spec
+*.manifest
+
+# Download / Output files
+*.csv
+*.png
+*.pdf
+
+# Environments
+.venv/
+venv/
+env/
+.env
+
+# IDE / OS temporary files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Other projects or temporary media files in working folder
+*.mp4
+data/
+my-video/
+public/
+public_html/
+src/
+node_modules/
+ASR_Analyzer/
+ASR_measurement_tool/
+MIDI_jikkennkun/
+NAMIR*/
+Remotion_work/
+SORAN/
+ToneBench/
+TINY_STOMP_Presentation.html
+index.html
+test.html
+subtitle_raw.txt
+title_raw.txt
+tsconfig*.json
+package*.json
+remotion.config.ts

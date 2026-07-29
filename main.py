@@ -761,15 +761,15 @@ class MeasureWorker(QThread):
 
     def __init__(self, in_dev: int, out_dev: int,
                  sample_rate: int, trials: int, interval: float,
-                 trigger_multiplier: float = 6.0):
+                 trigger_percent: float = 0.01):
         super().__init__()
-        self.in_dev             = in_dev
-        self.out_dev            = out_dev
-        self.sample_rate        = sample_rate
-        self.trials             = trials
-        self.interval           = interval
-        self.trigger_multiplier = trigger_multiplier
-        self._stop_flag         = False
+        self.in_dev          = in_dev
+        self.out_dev         = out_dev
+        self.sample_rate     = sample_rate
+        self.trials          = trials
+        self.interval        = interval
+        self.trigger_percent = trigger_percent   # R ch のピーク対比閾値 (0.0≤1.0)
+        self._stop_flag      = False
 
     def stop(self):
         self._stop_flag = True
@@ -791,28 +791,25 @@ class MeasureWorker(QThread):
 
     @staticmethod
     def _find_onset(signal: np.ndarray,
-                    noise_ref_end: int = None,
                     search_start: int = 0,
-                    trigger_multiplier: float = 6.0) -> int:
-        n = len(signal)
-        if noise_ref_end is None:
-            noise_ref_end = max(64, n // 20)
-
-        noise_ref_end = max(64, min(noise_ref_end, max(64, search_start)))
-        noise_ref_end = min(noise_ref_end, n)
-
-        noise_rms = float(np.sqrt(np.mean(signal[:noise_ref_end] ** 2)))
-
-        sig_peak     = float(np.max(np.abs(signal[search_start:])))
-        threshold_rms  = noise_rms * trigger_multiplier
-        threshold_peak = sig_peak * 0.01
-        threshold = max(threshold_rms, threshold_peak, 1e-5)
-
+                    trigger_percent: float = 0.01) -> int:
+        """
+        信号ピークに対する割合 trigger_percent で閾値を計算し、
+        search_start 以降で最初に閾値を超えるサンプルを返す。
+        ノイズ倒而に依存せず、DUT 信号の大きさに相対的な判定であるため、
+        ノイズ環境に左右されない。
+        """
         region = np.abs(signal[search_start:])
-        above  = np.where(region > threshold)[0]
+        if len(region) == 0:
+            return search_start
+
+        sig_peak  = float(np.max(region))
+        threshold = max(sig_peak * trigger_percent, 1e-6)
+
+        above = np.where(region > threshold)[0]
 
         if len(above) == 0:
-            return search_start + int(np.argmax(np.abs(signal[search_start:])))
+            return search_start + int(np.argmax(region))
 
         return search_start + int(above[0])
 
@@ -820,29 +817,25 @@ class MeasureWorker(QThread):
         """
         L ch / R ch ともオンセット検出で遅延を計算。
 
-        L ch にピーク検出、R ch にオンセット検出を使うと、
-        ガウシアン立ち上がりからピークまでの約 0.5 ms 分の系統誤差が生じる。
-        両 ch ともオンセット（立ち上がり）を用いることでこの誤差がキャンセルされる。
+        両 ch ともピークパーセンテージ閾値で検出。
+        - L ch (基準ガウシアン): 常に 1% 固定（ガウシアンは明確な信号のため精度十分）
+        - R ch (DUT):  UIで設定した trigger_percent を使用
+        - 両者共オンセット検出にすることでガウシアン立ち上がり時間（絇0.5ms）の
+          系統誤差を相殮させる。
         →  Latency = R_onset − L_onset
         """
         l_ch = rec[:, 0].astype(np.float64)
         r_ch = rec[:, 1].astype(np.float64)
 
-        # ノイズ参照区間: 先頭 10 ms
-        noise_ref = max(64, int(self.sample_rate * 0.010))
-
-        # L ch: オンセット検出（先頭から検索、ノイズ参照は先頭 10 ms）
+        # L ch: オンセット検出 - ガウシアンは明確なので 1% 固定
         l_onset = self._find_onset(l_ch,
-                                   noise_ref_end=noise_ref,
                                    search_start=0,
-                                   trigger_multiplier=self.trigger_multiplier)
+                                   trigger_percent=0.01)
 
-        # R ch: オンセット検出（l_onset 以降を検索、ノイズ参照は l_onset まで）
-        r_noise_ref = max(noise_ref, l_onset)
+        # R ch: オンセット検出 - UIで設定した閾値割合を使用、l_onset 以降を検索
         r_onset = self._find_onset(r_ch,
-                                   noise_ref_end=r_noise_ref,
                                    search_start=l_onset,
-                                   trigger_multiplier=self.trigger_multiplier)
+                                   trigger_percent=self.trigger_percent)
 
         delta_n    = max(0, r_onset - l_onset)
         latency_ms = (delta_n / self.sample_rate) * 1000.0
@@ -1079,9 +1072,16 @@ class MainWindow(QMainWindow):
         lbl_trig = QLabel("Trigger:")
         lbl_trig.setStyleSheet(f"color: {COLORS['text_secondary']}; font-size: 12px;")
         self.combo_trigger = QComboBox()
-        for label, val in [("Auto", 6.0), ("x2", 12.0), ("x4", 24.0), ("x8", 48.0)]:
+        for label, val in [
+            ("Auto (1%)",  0.01),
+            ("3%",         0.03),
+            ("5%",         0.05),
+            ("10%",        0.10),
+            ("20%",        0.20),
+            ("30%",        0.30),
+        ]:
             self.combo_trigger.addItem(label, val)
-        self.combo_trigger.setCurrentIndex(0)
+        self.combo_trigger.setCurrentIndex(0)   # Auto (1%) がデフォルト
         row_trig.addWidget(lbl_trig)
         row_trig.addWidget(self.combo_trigger, 1)
         lay.addLayout(row_trig)
@@ -1383,10 +1383,10 @@ class MainWindow(QMainWindow):
         self.canvas._init_axes()
         self.btn_csv.setEnabled(False); self.btn_png.setEnabled(False)
 
-        sr        = self.combo_sr.currentData()
-        trials    = self.combo_trials.currentData()
-        interval  = self.combo_interval.currentData()
-        trig_mult = self.combo_trigger.currentData()
+        sr           = self.combo_sr.currentData()
+        trials       = self.combo_trials.currentData()
+        interval     = self.combo_interval.currentData()
+        trig_percent = self.combo_trigger.currentData()
         self._sample_rate = sr
 
         self.progress_bar.setRange(0, trials)
@@ -1395,7 +1395,7 @@ class MainWindow(QMainWindow):
         self.btn_level.setEnabled(False)
         self.lbl_status.setText("Starting measurement...")
 
-        self._worker = MeasureWorker(in_idx, out_idx, sr, trials, interval, trig_mult)
+        self._worker = MeasureWorker(in_idx, out_idx, sr, trials, interval, trig_percent)
         self._worker.progress.connect(self._on_trial_progress)
         self._worker.trial_done.connect(self._on_trial_done)
         self._worker.finished_ok.connect(self._on_measure_finished)

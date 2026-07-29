@@ -14,6 +14,18 @@ GitHub Repository: [https://github.com/isamutheguitar/RTL-Analyzer](https://gith
 
 ![Dual-Channel RTL Analyzer Screenshot](docs/app_screenshot.png)
 
+## Release Notes / 改版履歴
+
+### v1.1 (2026-07-29)
+- **Improved Trigger Logic (Peak Percentage Threshold)**:
+  - Replaced the noise-multiplier thresholding (`Auto`, `x2`, `x4`, `x8`) with a **Peak Percentage threshold** system (`Auto (1%)`, `3%`, `5%`, `10%`, `20%`, `30%`).
+  - L channel (Reference Gaussian) remains fixed at 1% for maximum precision.
+  - R channel (DUT) threshold can be adjusted up to 30% to prevent early false triggers caused by subtle pre-ringing or initial low-amplitude leakage before the main signal onset.
+- **トリガー検出ロジックの改善（ピークパーセンテージ判定）**:
+  - 従来のノイズ倍率方式から、信号ピークに対する割合で判定する**ピークパーセンテージ方式**（`Auto (1%)`, `3%`, `5%`, `10%`, `20%`, `30%`）へ変更。
+  - L チャンネル（基準ガウシアン）は 1% 固定で高い精度を維持。
+  - R チャンネル（DUT）の閾値を調整可能にすることで、メイン波形の前に発生する微小なプリリンギングや漏れ込みノイズによる誤トリガーを防止。
+
 ---
 
 ## English Section
@@ -27,7 +39,7 @@ By using a **Gaussian impulse test signal** sent simultaneously to a direct loop
 ### Key Features
 
 - **Dual-Channel Onset Detection**: Uses Gaussian impulse onset detection on both L and R channels to eliminate systematic pulse rise-time bias.
-- **Configurable Noise Threshold (Trigger Ratio)**: Adjustable noise multiplier (`Auto` = x1, `x2`, `x4`, `x8`) to handle quiet studio gear as well as noisy analog/DSP chains.
+- **Configurable Threshold (Trigger Ratio)**: Adjustable peak percentage threshold (`Auto (1%)`, `3%`, `5%`, `10%`, `20%`, `30%`) relative to the maximum DUT signal level, ensuring accurate onset detection without being misled by noise floors or pre-ring spikes.
 - **Dynamic Waveform Visualization**: Matplotlib plot embedded in PySide6 with adjustable time axis scaling (`x1`, `x2`, `x4`) anchored to the reference onset ($t = 0.0\text{ ms}$).
 - **Level Calibration (Level Check)**: 1 kHz test tone at −12 dBFS to verify hardware input levels before starting measurement.
 - **Exporting Capabilities**:
@@ -117,7 +129,7 @@ Lチャンネル（直結ループバック＝基準信号）とRチャンネル
 ### 主な機能と特徴
 
 - **両チャンネル・オンセット検出**: L/R両チャンネルにオンセット検出（立ち上がり位置特定）を適用し、インパルスのパルス幅（約0.5 ms）による測定偏位を完璧に相殺。
-- **トリガー条件選択（ノイズ倍率設定）**: ノイズフロアに対する検出閾値を `Auto`（6.0倍）、`x2`（12.0倍）、`x4`（24.0倍）、`x8`（48.0倍）から選択可能。ローノイズなスタジオ機材からハイノイズなアナログ機材まで柔軟に対応。
+- **トリガー条件選択（ピークパーセンテージ閾値）**: 検出閾値を DUT 信号のピークに対する割合 `Auto (1%)`, `3%`, `5%`, `10%`, `20%`, `30%` から選択可能。微小なプリリンギングや過渡ノイズに惑わされず、DUT の真の動き始め（オンセット）を確実に捕捉。
 - **波形プロット時間軸拡大（x1 / x2 / x4）**: 基準波形のトリガー位置（L onset = $0.0\text{ ms}$、画面左から20%の位置）を固定したまま、時間軸の表示スパンを `x1`（デフォルト）、`x2`（2倍）、`x4`（4倍）にリアルタイムで拡大表示。
 - **レベルチェック機能**: −12 dBFS / 1 kHz サイン波を500 ms再生し、入力ゲインや出力レベルが適正範囲（−36 dBFS ～ −1 dBFS）にあるかを事前確認。
 - **測定結果・波形のエクスポート**:

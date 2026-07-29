@@ -336,7 +336,7 @@ def english():
         ["Sample Rate",  "44100 / 48000 / 88200 / 96000 / 192000 Hz",   "48000 Hz"],
         ["Trials",       "1 / 3 / 10 / 30 / 100",                       "10"],
         ["Interval",     "0.5 / 1.0 / 2.0 / 5.0 s",                    "1.0 s"],
-        ["Trigger",      "Auto (noise * 6.0) / x2 (*12.0) / x4 (*24.0) / x8 (*48.0)", "Auto"],
+        ["Trigger",      "Auto (1%) / 3% / 5% / 10% / 20% / 30% (Peak %)", "Auto (1%)"],
     ], col_widths=[38 * mm, 90 * mm, 32 * mm]))
 
     e.append(PageBreak())
@@ -502,7 +502,7 @@ def japanese():
         ["Sample Rate",   "44100 / 48000 / 88200 / 96000 / 192000 Hz", "48000 Hz"],
         ["Trials",        "1 / 3 / 10 / 30 / 100",                    "10"],
         ["Interval",      u"0.5 / 1.0 / 2.0 / 5.0 \u79d2",           u"1.0 \u79d2"],
-        ["Trigger",       "Auto (noise * 6.0) / x2 (*12.0) / x4 (*24.0) / x8 (*48.0)", "Auto"],
+        ["Trigger",       "Auto (1%) / 3% / 5% / 10% / 20% / 30% (Peak %)", "Auto (1%)"],
     ], col_widths=[38 * mm, 90 * mm, 32 * mm], jp=True))
 
     return e
